@@ -1,0 +1,33 @@
+name: artefact.yml
+
+on: workflow_dispatch
+
+jobs:
+    artefact :
+      runs-on: ubuntu-22.04
+
+      steps:
+        - uses: actions/checkout@v7
+        - uses: actions/setup-node@v7
+          with:
+            node-version: 24.18.0
+
+        - run: 'npm ci'
+
+        - run : 'npm run build'
+
+        - run: |
+            if [ ! -d dist]; then 
+            echo "::error::Le dossier dist/ n'existe pas"
+            exit 1
+            fi
+        - run: npm run test
+        - uses: actions/upload-artifact@v7
+          with:
+            name: 'artifact'
+            path: dist/
+        - run: |
+            echo "## Build" >> "$GITHUB_STEP_SUMMARY"
+            
+      
+
