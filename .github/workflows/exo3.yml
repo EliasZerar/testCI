@@ -1,0 +1,42 @@
+name: exo3.yml
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.18.0
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-artifact@v7
+        with:
+          path: 'dist/'
+
+  test:
+    needs: build
+    strategy:
+      matrix:
+        node: [ 20, 22 ]
+        os: [ ubuntu-22.04, windows-latest ]
+      max-parallel: 2
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/download-artifact@v7
+      - run: echo "## Résultat des tests"
+
+  deploy:
+    needs: [ build, test ]
+    runs-on: ubuntu-22.04
+    environment: staging
+
+    steps:
+      - uses: actions/download-artifact@v7
+      - run: echo "${{API_URL}}"
+      - run: echo "## Résultat des tests">> $GITHUB_STEP_SUMMARY
+
+
